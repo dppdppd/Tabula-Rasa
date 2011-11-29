@@ -1,31 +1,35 @@
-;;; tabula-rasa-mode.el - Distraction free editing mode
-;;
-;; Usage: M-x tr-mode
-;; License: free for all usages/modifications/distributions/whatever.
+;;; tr-mode.el - Distraction free editing mode
 
-(require 'cl)
+;;(require 'cl)
 
 ;; ------ configuration -----
-(defvar tr-mode-face-foreground "NavajoWhite"
+(defvar tr-face-foreground "NavajoWhite"
   "The foreground color of the default face")
 
-(defvar tr-mode-width 80
-  "Width of writing space.")
+(defcustom tr-width 80
+  "Width of writing space."
+  :type 'integer
+  :group 'tabula-rasa
+  :set (lambda (symbol value)
+         (progn (setq tr-width value)
+                (tr-update-window)))
+  :initialize 'custom-initialize-default
+)
 
 ;; -------- code start -------
-(setq *tr-mode-memtable* (make-hash-table))
+(setq *tr-memtable* (make-hash-table))
 
 (defun* tr-recall (var &optional (frame (selected-frame)))
-  (cdr (assoc var (gethash frame *tr-mode-memtable*))))
+  (cdr (assoc var (gethash frame *tr-memtable*))))
 
 (defun* tr-remember (var val &optional (frame (selected-frame)))
-  (let* ((varlist (gethash frame *tr-mode-memtable*))
+  (let* ((varlist (gethash frame *tr-memtable*))
 	 (target (assoc var varlist)))
     (cond (target
 	   (setf (cdr target) val))
 	  (t
 	   (puthash frame (cons (cons var val)
-				varlist) *tr-mode-memtable*)))))
+				varlist) *tr-memtable*)))))
 
 (defun tr-mode-set-enabled(var)
   (tr-remember 'tr-mode-enabled var))
@@ -33,10 +37,23 @@
 (defun tr-mode-enabledp()
   (tr-recall 'tr-mode-enabled))
 
-(defun tr-mode-update-window()
-  (set-window-margins (selected-window)
-                      (/ (- (window-width) 80) 2)              
-                      (/ (- (window-width) 80) 2)))
+(defun tr-update-window()
+  (cond 
+   ((or (one-window-p t nil) (window-full-width-p))
+    (set-window-margins tr-window
+                        (/ (- (frame-width) tr-width) 2)              
+                        (/ (- (frame-width) tr-width) 2)))
+   (t
+    (set-window-margins tr-window 0 0)
+    (set-window-margins (next-window) 0 0))))
+
+(defun tr-buffer-face()
+  (interactive)
+  (setq buffer-face-mode-face '(:height 160
+                                :family "IM FELL English Pro"
+                                :foreground "black"
+                                :background "papaya whip"
+                                )))
 
 (defun tr-mode ()
   (interactive)
@@ -46,34 +63,19 @@
 	 (tr-mode-enable))))
 
 (defun tr-mode-enable()
-  (interactive)  
+  (interactive)
+  (setq tr-window (selected-window))
   (delete-other-windows)
-
-  (tr-remember 'background-color (face-background 'default))
-  (tr-remember 'foreground-color (face-foreground 'default))
-  (tr-remember 'fc-bg-region (face-background 'region))
-  (tr-remember 'fc-fg-region (face-foreground 'region))
-  (tr-remember 'fc-bg-modeline (face-background 'mode-line))
-  (tr-remember 'fc-fg-modeline (face-foreground 'mode-line))
-  ; - set colors
-  (set-face-foreground 'default "black" (selected-frame))
-  (set-face-background 'default "papaya whip" (selected-frame))
-  (set-face-foreground 'region "black" (selected-frame))
-  (set-face-background 'region "peru" (selected-frame))
-  (set-face-foreground 'mode-line "gray15" (selected-frame))
-  (set-face-background 'mode-line "black" (selected-frame))
-  (set-face-attribute 'default nil
-                      :height 160
-                      :family "IM FELL English Pro")
+; (set-window-dedicated-p tr-window t)
+  (add-hook 'window-configuration-change-hook 'tr-update-window t nil)
+  (tr-buffer-face)
+  (buffer-face-mode 1)
 
   (tr-remember 'left-margin-width
                 (default-value 'left-margin-width))
   (tr-remember 'right-margin-width
                 (default-value 'right-margin-width))
-
-  (set-window-margins (selected-window)
-                      (/ (- (window-width) 80) 2)              
-                      (/ (- (window-width) 80) 2))
+  (tr-update-window)
 
   (tr-remember 'tr-line-spacing 'line-spacing)
   (setq line-spacing 0.0)
@@ -92,32 +94,26 @@
 
 (defun tr-mode-disable()
   (interactive)
-;  (set-face-foreground 'default (tr-recall 'foreground-color) (selected-frame))
-;  (set-face-background 'default (tr-recall 'background-color) (selected-frame))
-  (set-face-foreground 'region (tr-recall 'fc-fg-region) (selected-frame))
-  (set-face-background 'region (tr-recall 'fc-bg-region) (selected-frame))
-  (set-face-foreground 'mode-line (tr-recall 'fc-fg-modeline) (selected-frame))
-  (set-face-background 'mode-line (tr-recall 'fc-bg-modeline) (selected-frame))
-  (set-face-attribute 'default nil
-                      :height 90
-                      :foreground (tr-recall 'foreground-color)
-                      :background (tr-recall 'background-color)
-                      :family "Terminus")
+  (select-window tr-window)
+;  (set-window-dedicated-p tr-window nil)
+  (remove-hook 'window-configuration-change-hook 'tr-update-window)
+  (buffer-face-mode 0)
+
   ;; ----- margins
-  (set-window-margins (selected-window)
+  (set-window-margins tr-window
                       (tr-recall 'right-margin-width)
                       (tr-recall 'left-margin-width))
   ; - set
   (setq line-spacing (tr-recall 'tr-line-spacing))
 
-  (tr-mode-recall-frame-size)
+  (tr-recall-frame-size)
   ;; - set
   (tr-mode-set-enabled nil)
   (message (format "tr mode disabled on %s" (selected-frame)))
 
 )
 
-(defun tr-mode-recall-frame-size()
+(defun tr-recall-frame-size()
   (modify-frame-parameters (selected-frame)
 			   `((left . ,(tr-recall 'frame-left))
 			     (top . ,(tr-recall 'frame-top))
