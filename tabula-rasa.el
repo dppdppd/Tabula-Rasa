@@ -30,6 +30,7 @@
     (set-window-margins tr-window 0 0)
     (set-window-margins (next-window) 0 0))))
 
+
 (setq tr-mode-enabledp nil)
 
 (defun tr-mode ()
@@ -38,29 +39,34 @@
    (tr-mode-enabledp (tr-mode-disable))
    (t (tr-mode-enable))))
 
+;; Bug? It takes 2 calls to set bg color to set frame margin colors.
+(defun tr-set-frame-parms ()
+  (interactive)
+  (modify-frame-parameters tr-frame 
+                           `(
+                             (foreground-color . ,(face-attribute 'tabula-rasa :foreground))
+                             (background-color . ,(face-attribute 'tabula-rasa :background))
+                             )))
+
 (defun tr-mode-enable()
   (interactive)
   (setq tr-frame (make-frame `(
-                              (fullscreen . fullboth)
-                              (unsplittable . t)
-                              (vertical-scroll-bars . nil)
-                              (left-fringe . 0)
-                              (right-fringe . 0)
-                              (tool-bar-lines . 0)
-                              (menu-bar-lines . 0)
-                              (line-spacing . 5)
-                              (font . ,(face-font "tabula-rasa"))
-                              (foreground-color . ,(face-attribute 'tabula-rasa :foreground))
-                              (background-color . ,(face-attribute 'tabula-rasa :background))
-                              )))
-
+                               (fullscreen . fullboth)
+                               (unsplittable . t)
+                               (left-fringe . 0)
+                               (right-fringe . 0)
+                               (tool-bar-lines . 0)
+                               (menu-bar-lines . 0)
+                               (vertical-scroll-bars . nil)
+                               (line-spacing . 5)
+                               (font . ,(face-font "tabula-rasa"))
+                               (foreground-color . ,(face-attribute 'tabula-rasa :foreground))
+                               (background-color . ,(face-attribute 'tabula-rasa :background))
+                               )))
+  (tr-set-frame-parms)
   (setq tr-window (frame-selected-window tr-frame))
-
-  (set-window-dedicated-p tr-window t)
   (add-hook 'window-configuration-change-hook 'tr-update-window t nil)
-
   (tr-update-window)
-
   (setq tr-mode-enabledp t)
   (message (format "tr mode enabled on %s" (selected-frame)))
 )
@@ -75,6 +81,4 @@
 
 ;;;;;;;;;;;;;;;;; end ;;;;;;;;;;;;;;;;;
 
-(provide 'tr-mode)
-
-;; todo: why doesn't tr.el load?
+(provide 'tabula-rasa)
