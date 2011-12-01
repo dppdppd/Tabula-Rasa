@@ -1,4 +1,4 @@
-;;; tr-mode.el - Distraction free editing mode
+;;; tabula-rasa-mode.el - Distraction free writing
 
 (defcustom tr-width 80
   "Width of writing space."
@@ -24,12 +24,14 @@
   (cond 
    ((or (one-window-p t nil) (window-full-width-p))
     (set-window-margins tr-window
-                        (/ (- (frame-width) tr-width) 2)              
-                        (/ (- (frame-width) tr-width) 2)))
+                        (/ (- (frame-width tr-frame) tr-width) 2)              
+                        (/ (- (frame-width tr-frame) tr-width) 2)))
    (t
     (set-window-margins tr-window 0 0)
     (set-window-margins (next-window) 0 0))))
 
+;width test: 80 chars
+;12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
 
 (setq tr-mode-enabledp nil)
 
@@ -39,7 +41,7 @@
    (tr-mode-enabledp (tr-mode-disable))
    (t (tr-mode-enable))))
 
-;; Bug? It takes 2 calls to set bg color to set frame margin colors.
+;; Emacs bug? It takes 2 calls to set bg color to set frame margin colors.
 (defun tr-set-frame-parms ()
   (interactive)
   (modify-frame-parameters tr-frame 
@@ -68,7 +70,6 @@
   (add-hook 'window-configuration-change-hook 'tr-update-window t nil)
   (tr-update-window)
   (setq tr-mode-enabledp t)
-  (message (format "tr mode enabled on %s" (selected-frame)))
 )
 
 (defun tr-mode-disable()
@@ -76,7 +77,6 @@
   (delete-frame tr-frame)
   (remove-hook 'window-configuration-change-hook 'tr-update-window)
   (setq tr-mode-enabledp nil)
-  (message (format "tr mode disabled on %s" (selected-frame)))
 )
 
 ;;;;;;;;;;;;;;;;; end ;;;;;;;;;;;;;;;;;
