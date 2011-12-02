@@ -21,7 +21,7 @@
 
 (defun tr-update-window()
   (cond 
-   ((not (terminal-live-p tr-frame))
+   ((not (frame-live-p tr-frame))
     (tr-mode-disable))
    ((or (one-window-p t tr-frame) (window-full-width-p tr-window))
     (set-window-margins tr-window
@@ -53,6 +53,8 @@
                              )))
 
 (defun tr-mode-enable()
+;;  (interactive)
+  (global-highline-mode 0)
   (setq tr-frame (make-frame `(
                                (fullscreen . fullboth)
                                (unsplittable . t)
@@ -71,13 +73,13 @@
   (add-hook 'window-configuration-change-hook 'tr-update-window t nil)
   (add-hook 'kill-buffer-hook 'tr-mode-disable)
   (add-hook 'delete-frame-functions 'tr-mode-disable)
-  (tr-update-window)
   (setq tr-mode-enabledp t)
-  (global-highline-mode 0)
+  (tr-update-window)
 
 )
 
 (defun tr-mode-disable()
+;;  (interactive)
   (remove-hook 'window-configuration-change-hook 'tr-update-window)
   (remove-hook 'kill-buffer-hook 'tr-mode-disable)  
   (remove-hook 'delete-frame-functions 'tr-mode-disable)
@@ -85,7 +87,6 @@
   (global-highline-mode 1)
   (setq tr-mode-enabledp nil)
 )
-
 
 ;;;;;;;;;;;;;;;;; end ;;;;;;;;;;;;;;;;;
 
