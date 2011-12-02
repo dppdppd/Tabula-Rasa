@@ -9,20 +9,21 @@
                 (tr-update-window)))
   :initialize 'custom-initialize-default)
 
-
 (defface tabula-rasa
   '((t (
      :family "IM FELL English Pro"
      :foreground "black"
      :background "ivory"
-     :height 120
+     :height 140
     )))
   "Face for tabula-rasa mode."
   :group 'tabula-rasa)
 
 (defun tr-update-window()
   (cond 
-   ((or (one-window-p t nil) (window-full-width-p))
+   ((not (terminal-live-p tr-frame))
+    (tr-mode-disable))
+   ((or (one-window-p t tr-frame) (window-full-width-p tr-window))
     (set-window-margins tr-window
                         (/ (- (frame-width tr-frame) tr-width) 2)              
                         (/ (- (frame-width tr-frame) tr-width) 2)))
@@ -34,6 +35,7 @@
 ;12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
 
 (setq tr-mode-enabledp nil)
+(setq tr-frame nil)
 
 (defun tr-mode ()
   (interactive)
@@ -51,7 +53,6 @@
                              )))
 
 (defun tr-mode-enable()
-  (interactive)
   (setq tr-frame (make-frame `(
                                (fullscreen . fullboth)
                                (unsplittable . t)
@@ -68,16 +69,23 @@
   (tr-set-frame-parms)
   (setq tr-window (frame-selected-window tr-frame))
   (add-hook 'window-configuration-change-hook 'tr-update-window t nil)
+  (add-hook 'kill-buffer-hook 'tr-mode-disable)
+  (add-hook 'delete-frame-functions 'tr-mode-disable)
   (tr-update-window)
   (setq tr-mode-enabledp t)
+  (global-highline-mode 0)
+
 )
 
 (defun tr-mode-disable()
-  (interactive)
-  (delete-frame tr-frame)
   (remove-hook 'window-configuration-change-hook 'tr-update-window)
+  (remove-hook 'kill-buffer-hook 'tr-mode-disable)  
+  (remove-hook 'delete-frame-functions 'tr-mode-disable)
+  (delete-frame tr-frame)
+  (global-highline-mode 1)
   (setq tr-mode-enabledp nil)
 )
+
 
 ;;;;;;;;;;;;;;;;; end ;;;;;;;;;;;;;;;;;
 
