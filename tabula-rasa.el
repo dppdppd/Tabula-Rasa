@@ -1,7 +1,7 @@
 ;;; tabula-rasa-mode.el - Distraction free writing
 
 (defgroup tabula-rasa nil
-  "Distraction free writing"
+  "The latest in high-tech distraction free writing."
   :version 0.1
   :group 'text)
 
@@ -21,7 +21,7 @@
 
 (defcustom tabula-rasa-minor-mode-states
   '(("global-highline-mode" . nil) ("global-highlight-parentheses-mode" . nil))
-  "Alist of minor modes and their states while tabula-rasa mode is active. This allows you to specify modes to force on or off while in Tabula Rasa Mode."
+  "This allows you to temporarily disable or enable minor modes for Tabula Rasa. Add the minor mode and the desired state while in Tabula Rasa mode."
   :type '(repeat (cons :format "%v"
                        (string :tag "Minor Mode")
                        (boolean :tag "State"))))  
@@ -95,64 +95,23 @@
   (setq tr-saved-mmodes '())
   (mapc (lambda (mode)
           (if (intern-soft (car mode))
-              (setq tr-saved-mmodes (cons (list (car mode) (symbol-value (intern (car mode)))) tr-saved-mmodes))))
-        tabula-rasa-minor-mode-states)
-  (message "%s" tr-saved-mmodes))
-
-(defun tabula-rasa-save-mmodes-alist ()
-;;  (interactive)
-  (setq tr-saved-mmodes '())
-  (mapc (lambda (mode)
-          (if (intern-soft (car mode))
               (setq tr-saved-mmodes (cons (cons (car mode) (symbol-value (intern (car mode)))) tr-saved-mmodes))))
-        tabula-rasa-minor-mode-states)
-  (message "%s" tr-saved-mmodes))
-
+        tabula-rasa-minor-mode-states))
 
 (defun tabula-rasa-set-mmodes (mmodes-alist)
 ;;  (interactive)
   (mapc (lambda (mode)
-          (message "\n\nmode: %s" (cdr mode))
-          (message "mode assoc: %s" (assoc mode mmodes-alist))
-          (cond
-           ((cdr mode) 
-            (progn 
-               (message "t %s" (concat (car mode) " 1"))
-               (eval (read (concat "(" (car mode) " 1)")))
-            ))
-           (t
-            (progn 
-               (message "nil %s" (concat (car mode) " 0"))
-               (eval (read (concat "(" (car mode) " 0)")))
-            ))))
+          (if (intern-soft (car mode))
+              (cond
+               ((cdr mode) (eval (read (concat "(" (car mode) " 1)"))))
+               (t          (eval (read (concat "(" (car mode) " 0)")))))))
         mmodes-alist))
-
-
-(defun tabula-rasa-load-mmodes ()
-;;  (interactive)
-  (mapc (lambda (mode)
-          (cond
-           ((nth 1 mode) 
-            (progn 
-               (message "%s" (concat (car mode) " 1"))
-               (eval (concat (car mode) " 1"))
-            ))
-           (t
-            (progn 
-               (message "%s" (concat (car mode) " 0"))
-               (eval (concat (car mode) " 0"))
-            ))))
-        tr-saved-mmodes))
 
 (defun tabula-rasa-mode-enable()
 ;;  (interactive)
-
 (tabula-rasa-save-mmodes)
 (tabula-rasa-set-mmodes tabula-rasa-minor-mode-states)
-
 ;  (setq ns-antialias-text t)
-;;
-
   (setq tabula-rasa-frame (make-frame `(
                                (fullscreen . fullboth)
                                (unsplittable . t)
@@ -186,14 +145,12 @@
   (remove-hook 'window-configuration-change-hook 'tabula-rasa-update-window)
   (remove-hook 'delete-frame-functions 'tabula-rasa-mode-disable)
   (delete-frame tabula-rasa-frame)
-
-(tabula-rasa-set-mmodes tr-saved-mmodes)
+  (tabula-rasa-set-mmodes tr-saved-mmodes)
 ;  (setq ns-antialias-text nil)
-
 )
 
 ;;;;;;;;;;;;;;;;; end ;;;;;;;;;;;;;;;;;
 
 (provide 'tabula-rasa)
 
-;;* next tabula-rasa-mode is buffer-local so if you change the buffer displayed, it breaks toggling the mode.
+;;* next support light/dark
