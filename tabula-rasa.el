@@ -1,5 +1,37 @@
 ;;; tabula-rasa-mode.el - Distraction free writing
 
+;; Copyrigth (C) 2011  Ido Magal
+
+;; Author: Ido Magal <M8R-u8t2l4(at)mailinator.com>
+;; Version: $Id$
+;; Keywords; distraction free, writing
+;; URL: 
+;; Project page: 
+
+;; This file is *NOT* part of GNU Emacs.
+
+;; This program is free software; you can redistribute it and/or
+;; modify it under the terms of the GNU General Public License as
+;; published by the Free Software Foundation; either version 2, or (at
+;; your option) any later version.
+
+;; This program is distributed in the hope that it will be useful, but
+;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+;; General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with GNU Emacs; see the file COPYING. If not, write to the
+;; Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+
+
+;; TODO
+;; 
+;; Move colors from defface to custom options
+;; Support dark/light options
+;; Write description
+
+
 (defgroup tabula-rasa nil
   "The latest in high-tech distraction free writing."
   :version 0.1
@@ -27,10 +59,16 @@
                        (boolean :tag "State"))))  
 
 (defface tabula-rasa-default
-  '((t (
-        :font "Monaco"
-        :height 140
-    )))
+  '(
+    (((class grayscale)
+      (background light)) (:background "LightGray" :height 140 ))
+    (((class grayscale)
+      (background dark))  (:background "DimGray" :height 140 ))
+    (((class color)
+      (background light)) (:background "White" :foreground "Black" :height 140 ))
+    (((class color)
+      (background dark))  (:background "Black" :foreground "White" :height 140 ))
+    )
   "Face for tabula-rasa mode."
   :group 'tabula-rasa)
 
@@ -43,11 +81,16 @@
   :group 'tabula-rasa)
 
 (defface tabula-rasa-region
-  '((t (
-        :inherit tabula-rasa-default
-        :foreground "black"
-        :background "gray"
-    )))
+  '(
+    (((class grayscale)
+      (background light)) (:background "White" ))
+    (((class grayscale)
+      (background dark))  (:background "DimGray"))
+    (((class color)
+      (background light)) (:background "White" :foreground "Black"))
+    (((class color)
+      (background dark))  (:inherit tabula-rasa-default :background "gray" ))
+    )
   "Face for tabula-rasa mode."
   :group 'tabula-rasa)
 
@@ -180,3 +223,4 @@
 ;;;;;;;;;;;;;;;;; end ;;;;;;;;;;;;;;;;;
 
 (provide 'tabula-rasa)
+
