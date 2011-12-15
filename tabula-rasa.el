@@ -94,14 +94,14 @@
 ;;  (interactive)
   (setq tr-saved-mmodes '())
   (mapc (lambda (mode)
-          (if (intern-soft (car mode))
+          (if (boundp (read (car mode)))
               (setq tr-saved-mmodes (cons (cons (car mode) (symbol-value (intern (car mode)))) tr-saved-mmodes))))
         tabula-rasa-minor-mode-states))
 
 (defun tabula-rasa-set-mmodes (mmodes-alist)
 ;;  (interactive)
   (mapc (lambda (mode)
-          (if (intern-soft (car mode))
+          (if (boundp (read (car mode)))
               (cond
                ((cdr mode) (eval (read (concat "(" (car mode) " 1)"))))
                (t          (eval (read (concat "(" (car mode) " 0)")))))))
@@ -109,48 +109,74 @@
 
 (defun tabula-rasa-mode-enable()
 ;;  (interactive)
-(tabula-rasa-save-mmodes)
-(tabula-rasa-set-mmodes tabula-rasa-minor-mode-states)
-;  (setq ns-antialias-text t)
+  (if (eq tabula-rasa-mode 1)
+      (progn
+        (message "Tabula Rasa mode is already running")
+        (exit)))
+  (tabula-rasa-save-mmodes)
+  (tabula-rasa-set-mmodes tabula-rasa-minor-mode-states)
+  ;;  (setq ns-antialias-text t)
   (setq tabula-rasa-frame (make-frame `(
-                               (fullscreen . fullboth)
-                               (unsplittable . t)
-                               (left-fringe . 0)
-                               (right-fringe . 0)
-                               (tool-bar-lines . 0)
-                               (menu-bar-lines . 0)
-                               (vertical-scroll-bars . nil)
-                               (line-spacing . ,tabula-rasa-line-spacing)
-                               (font . ,(face-font "tabula-rasa-default"))
-                               (foreground-color . ,(face-attribute 'tabula-rasa-default :foreground))
-                               (background-color . ,(face-attribute 'tabula-rasa-default :background))
-                               (cursor-color . ,(face-attribute 'tabula-rasa-cursor :foreground))
-                               )))
-
+                                        (fullscreen . fullboth)
+                                        (unsplittable . t)
+                                        (left-fringe . 0)
+                                        (right-fringe . 0)
+                                        (tool-bar-lines . 0)
+                                        (menu-bar-lines . 0)
+                                        (vertical-scroll-bars . nil)
+                                        (line-spacing . ,tabula-rasa-line-spacing)
+                                        (font . ,(face-font "tabula-rasa-default"))
+                                        (foreground-color . ,(face-attribute 'tabula-rasa-default :foreground))
+                                        (background-color . ,(face-attribute 'tabula-rasa-default :background))
+                                        (cursor-color . ,(face-attribute 'tabula-rasa-cursor :foreground))
+                                        )))
+  
   (set-face-foreground 'region (face-attribute 'tabula-rasa-region :foreground) tabula-rasa-frame)
   (set-face-background 'region (face-attribute 'tabula-rasa-region :background) tabula-rasa-frame)
-
+  
   (setq tabula-rasa-window (frame-selected-window tabula-rasa-frame))
   (tabula-rasa-set-frame-parms)
   (add-hook 'window-configuration-change-hook 'tabula-rasa-update-window t nil)
   (add-hook 'delete-frame-functions 'tabula-rasa-mode-disable)
-  (ns-toggle-fullscreen)
-  (tabula-rasa-update-window)
-)
+  
+  (select-frame tabula-rasa-frame)
+  (cond 
+   ((string= system-type "darwin")
+    (ns-toggle-fullscreen))
+   ((string= system-type "gnu/linux")
+    (x-send-client-message nil 0 nil "_NET_WM_STATE" 32
+                           '(2 "_NET_WM_STATE_FULLSCREEN" 0)))
+   ((string= system-type "windows-nt")
+    (if (fboundp 'w32-send-sys-command)
+        ;; WM_SYSCOMMAND maximaze #xf030
+        (w32-send-sys-command 61488))))
+  
+  (tabula-rasa-update-window))
 
 (defun tabula-rasa-mode-disable()
 ;;  (interactive)
+
   (select-frame tabula-rasa-frame)
-  (ns-toggle-fullscreen)
+  ;; (cond 
+  ;;  ((string= system-type "darwin")
+  ;;   (ns-toggle-fullscreen))
+  ;;  ((string= system-type "gnu/linux")
+  ;;   (x-send-client-message nil 0 nil "_NET_WM_STATE" 32
+  ;;                          '(2 "_NET_WM_STATE_FULLSCREEN" 0)))
+  ;;  ((string= system-type "windows-nt")
+  ;;   (if (fboundp 'w32-send-sys-command)
+  ;;       ;; WM_SYSCOMMAND restore #xf120
+  ;;       (w32-send-sys-command 61728)
+  ;;     (progn (set-frame-parameter tabula-rasa-frame 'width 82)
+  ;;            (set-frame-parameter tabula-rasa-frame 'fullscreen 'fullheight)))))
+
   (remove-hook 'window-configuration-change-hook 'tabula-rasa-update-window)
   (remove-hook 'delete-frame-functions 'tabula-rasa-mode-disable)
   (delete-frame tabula-rasa-frame)
   (tabula-rasa-set-mmodes tr-saved-mmodes)
-;  (setq ns-antialias-text nil)
+  ;;  (setq ns-antialias-text nil)
 )
 
 ;;;;;;;;;;;;;;;;; end ;;;;;;;;;;;;;;;;;
 
 (provide 'tabula-rasa)
-
-;;* next support light/dark
