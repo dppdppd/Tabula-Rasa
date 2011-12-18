@@ -27,8 +27,6 @@
 
 ;; TODO
 ;; 
-;; Move colors from defface to custom options
-;; Support dark/light options
 ;; Write description
 
 
@@ -61,13 +59,13 @@
 (defface tabula-rasa-default
   '(
     (((class grayscale)
-      (background light)) (:background "LightGray" :height 140 ))
+      (background light)) (:background "LightGray"))
     (((class grayscale)
-      (background dark))  (:background "DimGray" :height 140 ))
+      (background dark))  (:background "DimGray"))
     (((class color)
-      (background light)) (:background "White" :foreground "Black" :height 140 ))
+      (background light)) (:background "White" :foreground "Black"))
     (((class color)
-      (background dark))  (:background "Black" :foreground "White" :height 140 ))
+      (background dark))  (:background "Black" :foreground "White"))
     )
   "Face for tabula-rasa mode."
   :group 'tabula-rasa)
@@ -77,7 +75,7 @@
         :inherit tabula-rasa-default
         :inverse-video t
     )))
-  "Face for tabula-rasa mode."
+  "Face for the Tabula Rasa cursor. Only background and foreground colors matter."
   :group 'tabula-rasa)
 
 (defface tabula-rasa-region
@@ -91,7 +89,7 @@
     (((class color)
       (background dark))  (:inherit tabula-rasa-default :background "gray" ))
     )
-  "Face for tabula-rasa mode."
+  "Face for the Tabula Rasa region select. Only background and foreground colors matter."
   :group 'tabula-rasa)
 
 (defun tabula-rasa-update-window()
