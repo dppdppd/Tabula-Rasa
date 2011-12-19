@@ -15,6 +15,10 @@
 ;; Tabula Rasa was inspired by darkroom-mode.el, WriteRoom, and all of the other 
 ;; distraction free tools. It was developed out of the need for a more customizable
 ;; distraction free mode for Emacs.
+;;
+;; Fullscreen caveats:
+;; Win32:       supports maximized window, not total fullscreen yet.
+;; Mac OSX:     supports fullscreen with cocoa (ns-toggle-fullscreen)
 
 ;;; Installation
 
@@ -38,10 +42,6 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with GNU Emacs; see the file COPYING. If not, write to the
 ;; Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
-
-;; TODO
-;; 
-;; Write description
 
 
 (defgroup tabula-rasa nil
