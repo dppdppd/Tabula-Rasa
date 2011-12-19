@@ -5,8 +5,7 @@
 ;; Author: Ido Magal <M8R-u8t2l4(at)mailinator.com>
 ;; Version: $Id$
 ;; Keywords; distraction free, writing
-;; URL: 
-;; Project page: 
+;; URL: https://github.com/idomagal/Tabula-Rasa/blob/master/tabula-rasa.el
 
 ;; This file is *NOT* part of GNU Emacs.
 
