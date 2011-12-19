@@ -26,6 +26,15 @@
 ;; and put the following in your Emacs configuration file (e.g. .emacs) file:
 ;; (require 'tabula-rasa)
 ;; Type M-x tabula-rasa-mode to toggle the mode.
+;;
+;; For customization of colors, etc, type M-x customize-group ENT tabula-rasa ENT
+;; Customization options include:
+;; - Text font and colors.
+;; - Cursor and region colors.
+;; - Column width
+;; - Line spacing
+;; - Minor modes to enable or disable for Tabula Rasa
+;; - Whether or not to antialias text (experimental)
 
 ;;; License:
 
