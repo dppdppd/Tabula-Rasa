@@ -3,7 +3,7 @@
 ;; Copyrigth (C) 2011  Ido Magal
 
 ;; Author: Ido Magal <M8R-u8t2l4(at)mailinator.com>
-;; Version: $Id$
+;; Version: 0.1.0
 ;; Keywords; distraction free, writing
 ;; URL: https://github.com/idomagal/Tabula-Rasa/blob/master/tabula-rasa.el
 
@@ -263,6 +263,6 @@ Add the minor mode and the desired state while in Tabula Rasa mode."
         (tabula-rasa-set-mmodes tr-saved-mmodes)
         )))
 
-;;;;;;;;;;;;;;;;; end ;;;;;;;;;;;;;;;;;
-
 (provide 'tabula-rasa)
+
+;;; tabula-rasa-mode.el ends here
