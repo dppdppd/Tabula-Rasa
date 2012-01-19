@@ -236,17 +236,14 @@ Add the minor mode and the desired state while in Tabula Rasa mode."
 ;;  (interactive)
   (if (frame-live-p tabula-rasa-frame)
       (progn
-        (if tabula-rasa-toggle-antialiasing
-            (progn
-              (setq ns-antialias-text (not ns-antialias-text))
-              ;; On OSX, toggling antialiasing doesn't refresh the entire display so
-              ;; we force it.
-              (redraw-display)))
         (setq tabula-rasa-mode nil)
         (select-frame tabula-rasa-frame)
-        (cond 
+
+        ;; toggle fullscreen based on OS
+        (cond
          ((string= system-type "darwin")
           (ns-toggle-fullscreen))
+
          ((string= system-type "gnu/linux")
           (x-send-client-message nil 0 nil "_NET_WM_STATE" 32
                                  '(2 "_NET_WM_STATE_FULLSCREEN" 0)))
@@ -259,8 +256,18 @@ Add the minor mode and the desired state while in Tabula Rasa mode."
         
         (remove-hook 'window-configuration-change-hook 'tabula-rasa-update-window)
         (remove-hook 'delete-frame-functions 'tabula-rasa-mode-disable)
+
         (if del-frame (delete-frame tabula-rasa-frame))
+
         (tabula-rasa-set-mmodes tr-saved-mmodes)
+        
+        (if tabula-rasa-toggle-antialiasing
+            (progn
+              (setq ns-antialias-text (not ns-antialias-text))
+              ;; On OSX, toggling antialiasing doesn't refresh the entire display so
+              ;; we force it.
+              (redraw-display)))
+
         )))
 
 (provide 'tabula-rasa)
