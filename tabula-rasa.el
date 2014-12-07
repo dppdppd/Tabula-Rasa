@@ -1,11 +1,12 @@
-;;; tabula-rasa-mode.el --- Distraction free writing mode
+;;; tabula-rasa.el --- Distraction free writing mode
 
-;; Copyrigth (C) 2011  Ido Magal
+;; Copyrigth (C) 2011-15  Ido Magal
 
-;; Author: Ido Magal <M8R-u8t2l4(at)mailinator.com>
+;; Author: Ido Magal <misc@satans.church>
 ;; Version: 0.1.0
 ;; Keywords: distraction free, writing
 ;; URL: https://github.com/idomagal/Tabula-Rasa/blob/master/tabula-rasa.el
+
 
 ;; This file is *NOT* part of GNU Emacs.
 
