@@ -4,8 +4,8 @@
 ;; Copyrigth (C) 2011-15  Ido Magal
 
 ;; Author: Ido Magal <misc@satans.church>
-;; Version:141207.0527
-;;                                          version func: (insert (format-time-string "%y%m%d.%H%M" (current-time)))
+;; Version:20141207.0532
+;; version func: (insert (format-time-string "%Y%m%d.%H%M" (current-time)))
 ;; Keywords: distraction free, writing
 ;; URL: https://github.com/idomagal/Tabula-Rasa/blob/master/tabula-rasa.el
 
