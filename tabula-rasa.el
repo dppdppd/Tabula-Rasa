@@ -157,7 +157,7 @@ Add the minor mode and the desired state while in Tabula Rasa mode."
 
 ;; Emacs bug? It takes 2 calls to set bg color to set frame margin colors.
 (defun tabula-rasa-set-frame-parms ()
-;;  (interactive)
+;  (interactive)
   (modify-frame-parameters tabula-rasa-frame 
                            `(
                              (background-color . ,(face-attribute 'tabula-rasa-default :background))
@@ -203,14 +203,15 @@ Add the minor mode and the desired state while in Tabula Rasa mode."
                                         (vertical-scroll-bars . nil)
                                         (line-spacing . ,tabula-rasa-line-spacing)
                                         (font . ,(face-font "tabula-rasa-default"))
-                                        (foreground-color . ,(face-attribute 'tabula-rasa-default :foreground))
-                                        (background-color . ,(face-attribute 'tabula-rasa-default :background))
                                         (cursor-color . ,(face-attribute 'tabula-rasa-cursor :foreground))
                                         )))
   
   (set-face-foreground 'region (face-attribute 'tabula-rasa-region :foreground) tabula-rasa-frame)
   (set-face-background 'region (face-attribute 'tabula-rasa-region :background) tabula-rasa-frame)
-  
+
+  (set-face-foreground 'default (face-attribute 'tabula-rasa-default :foreground) tabula-rasa-frame)
+  (set-face-background 'default (face-attribute 'tabula-rasa-default :background) tabula-rasa-frame)
+   
   (setq tabula-rasa-window (frame-selected-window tabula-rasa-frame))
   (tabula-rasa-set-frame-parms)
   (add-hook 'window-configuration-change-hook 'tabula-rasa-update-window t nil)
@@ -221,7 +222,8 @@ Add the minor mode and the desired state while in Tabula Rasa mode."
   (select-frame tabula-rasa-frame)
   (cond 
    ((string= system-type "darwin")
-    (ns-toggle-fullscreen))
+;;    (ns-toggle-fullscreen)
+    )
    ((string= system-type "gnu/linux")
     (x-send-client-message nil 0 nil "_NET_WM_STATE" 32
                            '(2 "_NET_WM_STATE_FULLSCREEN" 0)))
@@ -242,7 +244,8 @@ Add the minor mode and the desired state while in Tabula Rasa mode."
         ;; toggle fullscreen based on OS
         (cond
          ((string= system-type "darwin")
-          (ns-toggle-fullscreen))
+;;          (ns-toggle-fullscreen)
+          )
 
          ((string= system-type "gnu/linux")
           (x-send-client-message nil 0 nil "_NET_WM_STATE" 32
