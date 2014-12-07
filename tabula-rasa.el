@@ -1,4 +1,3 @@
-
 ;;; tabula-rasa.el --- Distraction free writing mode
 
 ;; Copyrigth (C) 2011-15  Ido Magal
@@ -8,13 +7,11 @@
 ;; version func: (insert (format-time-string "%Y%m%d.%H%M" (current-time)))
 ;; Keywords: distraction free, writing
 ;; URL: https://github.com/idomagal/Tabula-Rasa/blob/master/tabula-rasa.el
-
-
+;; Package-Requires: ((emacs "24.4"))
 
 ;; This file is *NOT* part of GNU Emacs.
 
 ;;; Commentary:
-
 ;; Tabula Rasa was inspired by darkroom-mode.el, WriteRoom, and all of the other  
 ;; distraction free tools. It was developed out of the need for a more customizable  
 ;; distraction free mode for Emacs.  
@@ -129,8 +126,7 @@ Add the minor mode and the desired state while in Tabula Rasa mode."
   "Face for the Tabula Rasa region select. Only background and foreground colors matter."
   :group 'tabula-rasa)
 
-(setq tabula-rasa-mode nil)
-(setq tabula-rasa-frame nil)
+(defvar tabula-rasa-frame nil)
 
 (define-minor-mode tabula-rasa-mode
   "YADFM: Yet Another Distraction Free Writing Mode" 
@@ -144,7 +140,6 @@ Add the minor mode and the desired state while in Tabula Rasa mode."
     (tabula-rasa-mode-disable t)))
 
 (defun tabula-rasa-update-window()
-;;  (interactive)
   (cond 
    ((not (frame-live-p tabula-rasa-frame))
     (tabula-rasa-mode-disable nil))
@@ -161,38 +156,36 @@ Add the minor mode and the desired state while in Tabula Rasa mode."
 
 ;; Emacs bug? It takes 2 calls to set bg color to set frame margin colors.
 (defun tabula-rasa-set-frame-parms ()
-;  (interactive)
   (modify-frame-parameters tabula-rasa-frame 
                            `(
                              (background-color . ,(face-attribute 'tabula-rasa-default :background))
                              )))
 
-(defun tabula-rasa-save-mmodes ()
+(defun tabula-rasa-save-minor-modes ()
 ;;  (interactive)
-  (setq tr-saved-mmodes '())
+  (defvar tabula-rasa-saved-minor-modes '())
   (mapc (lambda (mode)
           (if (boundp (read (car mode)))
-              (setq tr-saved-mmodes (cons (cons (car mode) (symbol-value (intern (car mode)))) tr-saved-mmodes))))
+              (setq tabula-rasa-saved-minor-modes (cons (cons (car mode) (symbol-value (intern (car mode)))) tabula-rasa-saved-minor-modes))))
         tabula-rasa-minor-mode-states))
 
-(defun tabula-rasa-set-mmodes (mmodes-alist)
+(defun tabula-rasa-set-minor-modes (minor-modes-alist)
 ;;  (interactive)
   (mapc (lambda (mode)
           (if (boundp (read (car mode)))
               (cond
                ((cdr mode) (eval (read (concat "(" (car mode) " 1)"))))
                (t          (eval (read (concat "(" (car mode) " 0)")))))))
-        mmodes-alist))
+        minor-modes-alist))
 
 (defun tabula-rasa-mode-enable()
-;;  (interactive)
   (if (eq tabula-rasa-mode 1)
       (progn
         (message "Tabula Rasa mode is already running")
         (exit)))
 ;; minor modes adjustment
-  (tabula-rasa-save-mmodes)
-  (tabula-rasa-set-mmodes tabula-rasa-minor-mode-states)
+  (tabula-rasa-save-minor-modes)
+  (tabula-rasa-set-minor-modes tabula-rasa-minor-mode-states)
 ;; antialiasing
   (if tabula-rasa-toggle-antialiasing
       (setq ns-antialias-text (not ns-antialias-text)))
@@ -224,49 +217,20 @@ Add the minor mode and the desired state while in Tabula Rasa mode."
                                             (if (eq frame tabula-rasa-frame)
                                                   (tabula-rasa-mode-disable nil))))
   (select-frame tabula-rasa-frame)
-  (cond 
-   ((string= system-type "darwin")
-;;    (ns-toggle-fullscreen)
-    )
-   ((string= system-type "gnu/linux")
-    (x-send-client-message nil 0 nil "_NET_WM_STATE" 32
-                           '(2 "_NET_WM_STATE_FULLSCREEN" 0)))
-   ((string= system-type "windows-nt")
-    (if (fboundp 'w32-send-sys-command)
-        ;; WM_SYSCOMMAND maximaze #xf030
-        (w32-send-sys-command 61488))))
-  
   (tabula-rasa-update-window))
 
 (defun tabula-rasa-mode-disable(del-frame)
-;;  (interactive)
   (if (frame-live-p tabula-rasa-frame)
       (progn
         (setq tabula-rasa-mode nil)
         (select-frame tabula-rasa-frame)
-
-        ;; toggle fullscreen based on OS
-        (cond
-         ((string= system-type "darwin")
-;;          (ns-toggle-fullscreen)
-          )
-
-         ((string= system-type "gnu/linux")
-          (x-send-client-message nil 0 nil "_NET_WM_STATE" 32
-                                 '(2 "_NET_WM_STATE_FULLSCREEN" 0)))
-         ((string= system-type "windows-nt")
-          (if (fboundp 'w32-send-sys-command)
-              ;; WM_SYSCOMMAND restore #xf120
-              (w32-send-sys-command 61728)
-            (progn (set-frame-parameter tabula-rasa-frame 'width 82)
-                   (set-frame-parameter tabula-rasa-frame 'fullscreen 'fullheight)))))
         
         (remove-hook 'window-configuration-change-hook 'tabula-rasa-update-window)
         (remove-hook 'delete-frame-functions 'tabula-rasa-mode-disable)
 
         (if del-frame (delete-frame tabula-rasa-frame))
 
-        (tabula-rasa-set-mmodes tr-saved-mmodes)
+        (tabula-rasa-set-minor-modes tabula-rasa-saved-minor-modes)
         
         (if tabula-rasa-toggle-antialiasing
             (progn
