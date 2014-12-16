@@ -3,7 +3,7 @@
 ;; Copyrigth (C) 2011-15  Ido Magal
 
 ;; Author: Ido Magal <misc@satans.church>
-;; Version:20141207.0824
+;; Version: 20141215.2119
 ;; version func: (insert (format-time-string "%Y%m%d.%H%M" (current-time)))
 ;; Keywords: distraction free, writing
 ;; URL: https://github.com/idomagal/Tabula-Rasa/blob/master/tabula-rasa.el
@@ -16,15 +16,16 @@
 ;; distraction free tools. It was developed out of the need for a more customizable  
 ;; distraction free mode for Emacs.  
 
-;; Fullscreen caveats:  
-;; Win32:       supports maximized window, not total fullscreen yet.  
-;; Mac OSX:     supports fullscreen with cocoa (ns-toggle-fullscreen)  
-
 ;;; Installation  
 
-;; To use this mode, put this file in your common lisp files dir (e.g. .emacs.d/site-lisp)  
-;; and put the following in your Emacs configuration file (e.g. .emacs) file:
+;; Install through Melpa
+;; or
+;; put this file in your common lisp files dir (e.g. .emacs.d/site-lisp)  
+;;
+;; Regardless, put the following in your Emacs configuration file (e.g. .emacs) file:
+;;
 ;; (require 'tabula-rasa)  
+;;
 ;; Type M-x tabula-rasa-mode to toggle the mode.  
 
 ;; For customization of colors, etc, type M-x customize-group RET tabula-rasa RET
@@ -71,9 +72,6 @@
   "Vertical line spacing."
   :type 'integer
   :group 'tabula-rasa
-  ;; :set (lambda (symbol value)
-  ;;        (setq tabula-rasa-line-spacing value)
-  ;;        (modify-frame-parameters tabula-rasa-frame '((line-spacing . value))))
   :initialize 'custom-initialize-default)
 
 (defcustom tabula-rasa-toggle-antialiasing nil
@@ -129,12 +127,11 @@ Add the minor mode and the desired state while in Tabula Rasa mode."
 (defvar tabula-rasa-frame nil)
 
 (define-minor-mode tabula-rasa-mode
-  "YADFM: Yet Another Distraction Free Writing Mode" 
+  "Distraction Free Writing" 
   :lighter " TR"
   :init-value nil
   :group 'tabula-rasa
   :global t
-; Awkwardly backwards logic. It would appear that define-minor-mode toggles the mode variable prior to evaluating the body.
   (if tabula-rasa-mode
       (tabula-rasa-mode-enable)
     (tabula-rasa-mode-disable t)))
@@ -156,13 +153,28 @@ Add the minor mode and the desired state while in Tabula Rasa mode."
 
 ;; Emacs bug? It takes 2 calls to set bg color to set frame margin colors.
 (defun tabula-rasa-set-frame-parms ()
-  (modify-frame-parameters tabula-rasa-frame 
-                           `(
-                             (background-color . ,(face-attribute 'tabula-rasa-default :background))
-                             )))
+  (progn
+    (modify-frame-parameters tabula-rasa-frame 
+			     `(
+			       (fullscreen . fullboth)
+			       (line-spacing . ,tabula-rasa-line-spacing)
+			       (foreground-color . ,(face-attribute 'tabula-rasa-default :foreground))
+			       (background-color . ,(face-attribute 'tabula-rasa-default :background))
+			       (font . ,(face-font "tabula-rasa-default"))
+			       (unsplittable . t)
+			       (left-fringe . 0)
+			       (right-fringe . 0)
+			       (tool-bar-lines . 0)
+			       (menu-bar-lines . 0)
+			       (vertical-scroll-bars . nil)
+			       ))
+    
+    (set-face-foreground 'region (face-attribute 'tabula-rasa-region :foreground) tabula-rasa-frame)
+    (set-face-background 'region (face-attribute 'tabula-rasa-region :background) tabula-rasa-frame)
+    (tabula-rasa-update-window)
+    ))
 
 (defun tabula-rasa-save-minor-modes ()
-;;  (interactive)
   (defvar tabula-rasa-saved-minor-modes '())
   (mapc (lambda (mode)
           (if (boundp (read (car mode)))
@@ -170,7 +182,6 @@ Add the minor mode and the desired state while in Tabula Rasa mode."
         tabula-rasa-minor-mode-states))
 
 (defun tabula-rasa-set-minor-modes (minor-modes-alist)
-;;  (interactive)
   (mapc (lambda (mode)
           (if (boundp (read (car mode)))
               (cond
@@ -178,46 +189,33 @@ Add the minor mode and the desired state while in Tabula Rasa mode."
                (t          (eval (read (concat "(" (car mode) " 0)")))))))
         minor-modes-alist))
 
+
 (defun tabula-rasa-mode-enable()
   (if (eq tabula-rasa-mode 1)
       (progn
         (message "Tabula Rasa mode is already running")
         (exit)))
-;; minor modes adjustment
+  ;; minor modes adjustment
   (tabula-rasa-save-minor-modes)
   (tabula-rasa-set-minor-modes tabula-rasa-minor-mode-states)
-;; antialiasing
+  ;; antialiasing
   (if tabula-rasa-toggle-antialiasing
       (setq ns-antialias-text (not ns-antialias-text)))
-
-  (setq tabula-rasa-frame (make-frame `(
-                                        (fullscreen . fullboth)
-                                        (unsplittable . t)
-                                        (left-fringe . 0)
-                                        (right-fringe . 0)
-                                        (tool-bar-lines . 0)
-                                        (menu-bar-lines . 0)
-                                        (vertical-scroll-bars . nil)
-                                        (line-spacing . ,tabula-rasa-line-spacing)
-                                        (font . ,(face-font "tabula-rasa-default"))
-                                        (cursor-color . ,(face-attribute 'tabula-rasa-cursor :foreground))
-                                        )))
   
-  (set-face-foreground 'region (face-attribute 'tabula-rasa-region :foreground) tabula-rasa-frame)
-  (set-face-background 'region (face-attribute 'tabula-rasa-region :background) tabula-rasa-frame)
-
-  (set-face-foreground 'default (face-attribute 'tabula-rasa-default :foreground) tabula-rasa-frame)
-  (set-face-background 'default (face-attribute 'tabula-rasa-default :background) tabula-rasa-frame)
-   
-  (setq tabula-rasa-window (frame-selected-window tabula-rasa-frame))
-  (tabula-rasa-set-frame-parms)
+  (setq tabula-rasa-frame (make-frame))
+  
   (add-hook 'window-configuration-change-hook 'tabula-rasa-update-window t nil)
   (add-hook 'delete-frame-functions (
                                      lambda (frame)
                                             (if (eq frame tabula-rasa-frame)
-                                                  (tabula-rasa-mode-disable nil))))
+                                                (tabula-rasa-mode-disable nil))))
   (select-frame tabula-rasa-frame)
-  (tabula-rasa-update-window))
+  (setq tabula-rasa-window (frame-selected-window tabula-rasa-frame))
+  (tabula-rasa-set-frame-parms)
+
+  )
+
+
 
 (defun tabula-rasa-mode-disable(del-frame)
   (if (frame-live-p tabula-rasa-frame)
@@ -227,7 +225,7 @@ Add the minor mode and the desired state while in Tabula Rasa mode."
         
         (remove-hook 'window-configuration-change-hook 'tabula-rasa-update-window)
         (remove-hook 'delete-frame-functions 'tabula-rasa-mode-disable)
-
+	
         (if del-frame (delete-frame tabula-rasa-frame))
 
         (tabula-rasa-set-minor-modes tabula-rasa-saved-minor-modes)
@@ -243,4 +241,4 @@ Add the minor mode and the desired state while in Tabula Rasa mode."
 
 (provide 'tabula-rasa)
 
-;;; tabula-rasa-mode.el ends here
+;;; tabula-rasa.el ends here
