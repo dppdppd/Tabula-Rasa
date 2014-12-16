@@ -202,7 +202,7 @@ Add the minor mode and the desired state while in Tabula Rasa mode."
   (if tabula-rasa-toggle-antialiasing
       (setq ns-antialias-text (not ns-antialias-text)))
   
-  (setq tabula-rasa-frame (make-frame))
+  (setq tabula-rasa-frame (make-frame '((fullscreen . fullboth))))
   
   (add-hook 'window-configuration-change-hook 'tabula-rasa-update-window t nil)
   (add-hook 'delete-frame-functions (
